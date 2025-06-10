@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recetas con lo que hay 🍳</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background: #fff9f0;
+      color: #333;
+      max-width: 700px;
+      margin: auto;
+    }
+    h1 {
+      color: #e76f51;
+    }
+    input, select, button {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .receta {
+      background: #ffe8d6;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-top: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .foto-preview {
+      width: 100%;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>👩‍🍳 Recetas con lo que hay</h1>
+
+  <label for="ingredientes">¿Qué tienes en tu cocina?</label>
+  <input type="text" id="ingredientes" placeholder="ej. arroz, pollo, tomate" />
+
+  <label for="foto">📷 O toma una foto de los ingredientes:</label>
+  <input type="file" id="foto" accept="image/*" capture="environment" />
+  <img id="fotoPreview" class="foto-preview" style="display: none;" />
+
+  <label for="modo">¿Quieres algo saludable?</label>
+  <select id="modo">
+    <option value="saludable">Sí, saludable</option>
+    <option value="cualquiera">No importa</option>
+  </select>
+
+  <label for="calorias">¿Cuántas calorías quieres máximo?</label>
+  <input type="number" id="calorias" placeholder="ej. 500" />
+
+  <button onclick="buscarReceta()">🍽 Buscar receta</button>
+
+  <div id="resultado"></div>
+
+  <script>
+    const recetas = [
+      {
+        nombre: "Ensalada de arroz con pollo",
+        ingredientes: ["arroz", "pollo", "tomate"],
+        calorias: 450,
+        saludable: true,
+        tiempo: "15 min"
+      },
+      {
+        nombre: "Sandwich de jamón y queso",
+        ingredientes: ["pan", "jamón", "queso"],
+        calorias: 600,
+        saludable: false,
+        tiempo: "5 min"
+      },
+      {
+        nombre: "Tortilla de verduras",
+        ingredientes: ["huevo", "zanahoria", "cebolla"],
+        calorias: 300,
+        saludable: true,
+        tiempo: "10 min"
+      }
+    ];
+
+    function buscarReceta() {
+      const textoIngredientes = document.getElementById("ingredientes").value.toLowerCase();
+      const modo = document.getElementById("modo").value;
+      const caloriasMax = parseInt(document.getElementById("calorias").value);
+
+      const ingredientesUsuario = textoIngredientes.split(",").map(i => i.trim());
+
+      const recetasFiltradas = recetas.filter(r => {
+        const coincideIngredientes = ingredientesUsuario.every(ing => r.ingredientes.includes(ing));
+        const coincideCalorias = isNaN(caloriasMax) || r.calorias <= caloriasMax;
+        const coincideModo = modo === "cualquiera" || r.saludable;
+        return coincideIngredientes && coincideCalorias && coincideModo;
+      });
+
+      const resultado = document.getElementById("resultado");
+      resultado.innerHTML = "";
+
+      if (recetasFiltradas.length === 0) {
+        resultado.innerHTML = "<p>No se encontró una receta con esos ingredientes 😢</p>";
+      } else {
+        recetasFiltradas.forEach(r => {
+          const div = document.createElement("div");
+          div.className = "receta";
+          div.innerHTML = `<h3>${r.nombre}</h3>
+            <p>Ingredientes: ${r.ingredientes.join(", ")}</p>
+            <p>Calorías: ${r.calorias}</p>
+            <p>Tiempo de preparación: ${r.tiempo}</p>`;
+          resultado.appendChild(div);
+        });
+      }
+    }
+
+    // Mostrar la foto seleccionada
+    document.getElementById("foto").addEventListener("change", function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const preview = document.getElementById("fotoPreview");
+          preview.src = e.target.result;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
+</body>
+</html>
